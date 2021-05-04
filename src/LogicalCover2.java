@@ -1,4 +1,6 @@
+import controlP5.CheckBox;
 import controlP5.ControlP5;
+import controlP5.RadioButton;
 import controlP5.Textfield;
 import processing.core.PApplet;
 import processing.event.KeyEvent;
@@ -28,6 +30,8 @@ public class LogicalCover2 extends PApplet {
         controls.addTextfield("noiseXRatio").setPosition(20, 300);
         controls.addTextfield("noiseYRatio").setPosition(20, 350);
         controls.addTextfield("strokeWeight").setPosition(20, 400);
+        controls.addTextfield("fill").setPosition(20, 450);
+        controls.addTextfield("line").setPosition(20, 500);
 
         // colors inputs
         controls.addTextfield("backgroundH").setPosition(320, 100);
@@ -36,15 +40,17 @@ public class LogicalCover2 extends PApplet {
         controls.addTextfield("startFillH").setPosition(320, 250);
         controls.addTextfield("startFillS").setPosition(320, 300);
         controls.addTextfield("startFillB").setPosition(320, 350);
-        controls.addTextfield("endFillH").setPosition(320, 400);
-        controls.addTextfield("endFillS").setPosition(320, 450);
-        controls.addTextfield("endFillB").setPosition(320, 500);
-        controls.addTextfield("startLineH").setPosition(320, 550);
-        controls.addTextfield("startLineS").setPosition(320, 600);
-        controls.addTextfield("startLineB").setPosition(320, 650);
-        controls.addTextfield("endLineH").setPosition(320, 700);
-        controls.addTextfield("endLineS").setPosition(320, 750);
-        controls.addTextfield("endLineB").setPosition(320, 800);
+        controls.addTextfield("startFillA").setPosition(320, 400);
+        controls.addTextfield("endFillH").setPosition(320, 450);
+        controls.addTextfield("endFillS").setPosition(320, 500);
+        controls.addTextfield("endFillB").setPosition(320, 550);
+        controls.addTextfield("endFillA").setPosition(320, 600);
+        controls.addTextfield("startLineH").setPosition(320, 650);
+        controls.addTextfield("startLineS").setPosition(320, 700);
+        controls.addTextfield("startLineB").setPosition(320, 750);
+        controls.addTextfield("endLineH").setPosition(320, 800);
+        controls.addTextfield("endLineS").setPosition(320, 850);
+        controls.addTextfield("endLineB").setPosition(320, 900);
     }
 
     @Override
@@ -60,6 +66,8 @@ public class LogicalCover2 extends PApplet {
         var NOISE_X_RATIO = parseFloatInput("noiseXRatio", 0.4f);
         var NOISE_Y_RATIO = parseFloatInput("noiseYRatio", 0.2f);
         var STROKE_WEIGHT = parseIntegerInput("strokeWeight", 1);
+        var FILL = parseBooleanInput("fill", true);
+        var LINE = parseBooleanInput("line", true);
         var BACKGROUND_H = parseIntegerInput("backgroundH", 217);
         var BACKGROUND_S = parseIntegerInput("backgroundS", 72);
         var BACKGROUND_B = parseIntegerInput("backgroundB", 76);
@@ -97,6 +105,8 @@ public class LogicalCover2 extends PApplet {
                 inputParameters.noiseYRatio = NOISE_Y_RATIO;
                 inputParameters.pointsMax = POINTS_MAX;
                 inputParameters.strokeWeight = STROKE_WEIGHT;
+                inputParameters.fill = FILL;
+                inputParameters.line = LINE;
                 inputParameters.backgroundColor = new HSB(BACKGROUND_H, BACKGROUND_S, BACKGROUND_B);
                 inputParameters.startFillColor = new HSB(START_FILL_H, START_FILL_S, START_FILL_B, START_FILL_A);
                 inputParameters.startLineColor = new HSB(START_LINE_H, START_LINE_S, START_LINE_B, START_LINE_A);
@@ -120,14 +130,26 @@ public class LogicalCover2 extends PApplet {
 
         strokeWeight(input.strokeWeight);
         for (int rotationCount = 0; rotationCount < input.rotationsMax; rotationCount++) {
-            stroke(map(rotationCount, 0, input.rotationsMax, input.startLineColor.h, input.endLineColor.h),
-                    map(rotationCount, 0, input.rotationsMax, input.startLineColor.s, input.endLineColor.s),
-                    map(rotationCount, 0, input.rotationsMax, input.startLineColor.b, input.endLineColor.b),
-                    input.endLineColor.a);
-            fill(map(rotationCount, 0, input.rotationsMax, input.startFillColor.h, input.endFillColor.h),
-                    map(rotationCount, 0, input.rotationsMax, input.startFillColor.s, input.endFillColor.s),
-                    map(rotationCount, 0, input.rotationsMax, input.startFillColor.b, input.endFillColor.b),
-                    input.endFillColor.a);
+            if (input.line){
+                stroke(map(rotationCount, 0, input.rotationsMax, input.startLineColor.h, input.endLineColor.h),
+                        map(rotationCount, 0, input.rotationsMax, input.startLineColor.s, input.endLineColor.s),
+                        map(rotationCount, 0, input.rotationsMax, input.startLineColor.b, input.endLineColor.b),
+                        map(rotationCount, 0, input.rotationsMax, input.startLineColor.a, input.endLineColor.a));
+
+            } else {
+                noStroke();
+            }
+
+            if (input.fill){
+                fill(map(rotationCount, 0, input.rotationsMax, input.startFillColor.h, input.endFillColor.h),
+                        map(rotationCount, 0, input.rotationsMax, input.startFillColor.s, input.endFillColor.s),
+                        map(rotationCount, 0, input.rotationsMax, input.startFillColor.b, input.endFillColor.b),
+                        map(rotationCount, 0, input.rotationsMax, input.startFillColor.a, input.endFillColor.a));
+
+            } else {
+                noFill();
+            }
+
             pushMatrix();
             var rotateRatio = map(rotationCount, 0, input.rotationsMax, 0.0f, 1.0f);
             rotate(TWO_PI * rotateRatio);
@@ -198,6 +220,14 @@ public class LogicalCover2 extends PApplet {
         }
     }
 
+    private boolean parseBooleanInput(String inputName, boolean defaultValue) {
+        try {
+            return Integer.valueOf(controls.get(Textfield.class, inputName).getText()).equals("1");
+        } catch (Exception e){
+            return defaultValue;
+        }
+    }
+
     class InputParameters {
         float rotationsMax;
         int frameSize;
@@ -211,6 +241,8 @@ public class LogicalCover2 extends PApplet {
         HSB endLineColor;
         HSB endFillColor;
         int strokeWeight;
+        boolean fill;
+        boolean line;
     }
 
     class HSB {
