@@ -1,24 +1,27 @@
+import controlP5.ControlP5;
 import processing.core.PApplet;
-import processing.core.PImage;
-import processing.core.PShape;
 
 public class LogicalCover2 extends PApplet {
-    private PImage bg;
+    private ControlP5 controls;
 
     @Override
     public void settings() {
         size(1080, 1080);
         smooth();
+
     }
 
     @Override
     public void setup() {
         colorMode(HSB, 360, 100, 100, 100);
-//        noStroke();
-        noLoop();
+//        noLoop();
         rectMode(CENTER);
-        frameRate(1);
-        bg = loadImage("light-blue-paper-texture.jpg").get(0, 0, width, height);
+//        frameRate(1);
+        controls = new ControlP5(this);
+        controls.addSlider("sliderValue")
+                .setPosition(100, 50)
+                .setRange(0, 255)
+        ;
     }
 
     @Override
@@ -26,23 +29,12 @@ public class LogicalCover2 extends PApplet {
         var ROTATIONS_MAX = 100.0f;
         var DIVISION = 2;
         var FRAME_SIZE = width;
-        var POINTS_MAX = 2000;
+        var POINTS_MAX = 200;
         var NOISE_SEED = 78950423890l;
-        var NOISE_X_QUOTIENT = 0.4f;
-        var NOISE_Y_QUOTIENT = 0.2f;
+        var NOISE_X_RATIO = 0.4f;
+        var NOISE_Y_RATIO = 0.2f;
 
         noiseSeed(NOISE_SEED);
-        strokeWeight(1);
-
-        // draw background
-        blendMode(BLEND);
-//        background(0, 0, 0);
-//        background(217,72,76);
-//        background(bg);
-
-//        translate(width / 2.0f, height / 2.0f);
-//        noFill();
-//        noStroke();
         blendMode(BLEND);
 
 
@@ -56,12 +48,14 @@ public class LogicalCover2 extends PApplet {
                 inputParameters.frameSize = FRAME_SIZE / (DIVISION / 2);
                 inputParameters.noiseSeed = NOISE_SEED + i + j;
                 inputParameters.rotationsMax = ROTATIONS_MAX;
-                inputParameters.noiseXRatio = NOISE_X_QUOTIENT;
-                inputParameters.noiseYRatio = NOISE_Y_QUOTIENT;
+                inputParameters.noiseXRatio = NOISE_X_RATIO;
+                inputParameters.noiseYRatio = NOISE_Y_RATIO;
                 inputParameters.pointsMax = POINTS_MAX;
-                inputParameters.h = 217;
-                inputParameters.s = 72;
-                inputParameters.b = 76;
+                inputParameters.backgroundColor = new HSB(217, 72, 76);
+                inputParameters.startFillColor = new HSB(0, 0, 0);
+                inputParameters.startLineColor = new HSB(0, 0, 0);
+                inputParameters.endFillColor = new HSB(50, 70, 100, 3);
+                inputParameters.endLineColor = new HSB(50, 70, 100, 60);
                 drawInstance(inputParameters);
                 popMatrix();
             }
@@ -73,18 +67,18 @@ public class LogicalCover2 extends PApplet {
         noiseSeed(input.noiseSeed);
         translate(input.frameSize / 2.0f, input.frameSize / 2.0f);
         noStroke();
-        fill(input.h, input.s, input.b);
+        fill(input.backgroundColor.h, input.backgroundColor.s, input.backgroundColor.b);
         square(0, 0, input.frameSize);
 
         for (int rotationCount = 0; rotationCount < input.rotationsMax; rotationCount++) {
-            stroke(map(rotationCount, 0, input.rotationsMax, 0, 50),
-                    map(rotationCount, 0, input.rotationsMax, 0, 70),
-                    map(rotationCount, 0, input.rotationsMax, 0, 100),
-                    60);
-            fill(map(rotationCount, 0, input.rotationsMax, 0, 50),
-                    map(rotationCount, 0, input.rotationsMax, 0, 70),
-                    map(rotationCount, 0, input.rotationsMax, 0, 100),
-                    3);
+            stroke(map(rotationCount, 0, input.rotationsMax, input.startLineColor.h, input.endLineColor.h),
+                    map(rotationCount, 0, input.rotationsMax, input.startLineColor.s, input.endLineColor.s),
+                    map(rotationCount, 0, input.rotationsMax, input.startLineColor.b, input.endLineColor.b),
+                    input.endLineColor.a);
+            fill(map(rotationCount, 0, input.rotationsMax, input.startFillColor.h, input.endFillColor.h),
+                    map(rotationCount, 0, input.rotationsMax, input.startFillColor.s, input.endFillColor.s),
+                    map(rotationCount, 0, input.rotationsMax, input.startFillColor.b, input.endFillColor.b),
+                    input.endFillColor.a);
             pushMatrix();
             var rotateRatio = map(rotationCount, 0, input.rotationsMax, 0.0f, 1.0f);
             rotate(TWO_PI * rotateRatio);
@@ -112,11 +106,6 @@ public class LogicalCover2 extends PApplet {
         save("/Users/florentbariod/temp/output.tif");
     }
 
-    public static void main(String... args) {
-        LogicalCover2 pt = new LogicalCover2();
-        PApplet.runSketch(new String[]{"LogicalCover2"}, pt);
-    }
-
     class InputParameters {
         float rotationsMax;
         int frameSize;
@@ -124,9 +113,36 @@ public class LogicalCover2 extends PApplet {
         int pointsMax;
         float noiseXRatio;
         float noiseYRatio;
+        HSB backgroundColor;
+        HSB startLineColor;
+        HSB startFillColor;
+        HSB endLineColor;
+        HSB endFillColor;
+    }
+
+    class HSB {
         int h;
         int s;
         int b;
+        int a = 100;
+
+        public HSB(int h, int s, int b) {
+            this.h = h;
+            this.s = s;
+            this.b = b;
+        }
+
+        public HSB(int h, int s, int b, int a) {
+            this.h = h;
+            this.s = s;
+            this.b = b;
+            this.a = a;
+        }
+    }
+
+    public static void main(String... args) {
+        LogicalCover2 pt = new LogicalCover2();
+        PApplet.runSketch(new String[]{"LogicalCover2"}, pt);
     }
 }
 
