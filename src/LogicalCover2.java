@@ -1,8 +1,11 @@
 import controlP5.ControlP5;
+import controlP5.Textfield;
 import processing.core.PApplet;
+import processing.event.KeyEvent;
 
 public class LogicalCover2 extends PApplet {
     private ControlP5 controls;
+    boolean draw = false;
 
     @Override
     public void settings() {
@@ -14,29 +17,71 @@ public class LogicalCover2 extends PApplet {
     @Override
     public void setup() {
         colorMode(HSB, 360, 100, 100, 100);
-//        noLoop();
         rectMode(CENTER);
-//        frameRate(1);
         controls = new ControlP5(this);
-        controls.addSlider("sliderValue")
-                .setPosition(100, 50)
-                .setRange(0, 255)
-        ;
+
+        // shapes inputs
+        controls.addTextfield("rotations").setPosition(20, 100);
+        controls.addTextfield("divisions").setPosition(20, 150);
+        controls.addTextfield("pointsMax").setPosition(20, 200);
+        controls.addTextfield("noiseSeed").setPosition(20, 250);
+        controls.addTextfield("noiseXRatio").setPosition(20, 300);
+        controls.addTextfield("noiseYRatio").setPosition(20, 350);
+        controls.addTextfield("strokeWeight").setPosition(20, 400);
+
+        // colors inputs
+        controls.addTextfield("backgroundH").setPosition(320, 100);
+        controls.addTextfield("backgroundS").setPosition(320, 150);
+        controls.addTextfield("backgroundB").setPosition(320, 200);
+        controls.addTextfield("startFillH").setPosition(320, 250);
+        controls.addTextfield("startFillS").setPosition(320, 300);
+        controls.addTextfield("startFillB").setPosition(320, 350);
+        controls.addTextfield("endFillH").setPosition(320, 400);
+        controls.addTextfield("endFillS").setPosition(320, 450);
+        controls.addTextfield("endFillB").setPosition(320, 500);
+        controls.addTextfield("startLineH").setPosition(320, 550);
+        controls.addTextfield("startLineS").setPosition(320, 600);
+        controls.addTextfield("startLineB").setPosition(320, 650);
+        controls.addTextfield("endLineH").setPosition(320, 700);
+        controls.addTextfield("endLineS").setPosition(320, 750);
+        controls.addTextfield("endLineB").setPosition(320, 800);
     }
 
     @Override
     public void draw() {
-        var ROTATIONS_MAX = 100.0f;
-        var DIVISION = 2;
+        if (!draw) {
+            return;
+        }
         var FRAME_SIZE = width;
-        var POINTS_MAX = 200;
-        var NOISE_SEED = 78950423890l;
-        var NOISE_X_RATIO = 0.4f;
-        var NOISE_Y_RATIO = 0.2f;
+        var ROTATIONS_MAX = parseIntegerInput("rotations", 100);
+        var DIVISION = parseIntegerInput("divisions", 2);
+        var POINTS_MAX = parseIntegerInput("pointsMax", 20);
+        var NOISE_SEED = parseLongInput("noiseSeed", 78950423890l);
+        var NOISE_X_RATIO = parseFloatInput("noiseXRatio", 0.4f);
+        var NOISE_Y_RATIO = parseFloatInput("noiseYRatio", 0.2f);
+        var STROKE_WEIGHT = parseIntegerInput("strokeWeight", 1);
+        var BACKGROUND_H = parseIntegerInput("backgroundH", 217);
+        var BACKGROUND_S = parseIntegerInput("backgroundS", 72);
+        var BACKGROUND_B = parseIntegerInput("backgroundB", 76);
+        var START_FILL_H = parseIntegerInput("startFillH", 0);
+        var START_FILL_S = parseIntegerInput("startFillS", 0);
+        var START_FILL_B = parseIntegerInput("startFillB", 0);
+        var START_FILL_A = parseIntegerInput("startFillA", 3);
+        var END_FILL_H = parseIntegerInput("endFillH", 50);
+        var END_FILL_S = parseIntegerInput("endFillS", 70);
+        var END_FILL_B = parseIntegerInput("endFillB", 100);
+        var END_FILL_A = parseIntegerInput("endFillA", 3);
+        var START_LINE_H = parseIntegerInput("startLineH", 0);
+        var START_LINE_S = parseIntegerInput("startLineS", 0);
+        var START_LINE_B = parseIntegerInput("startLineB", 0);
+        var START_LINE_A = parseIntegerInput("startLineA", 60);
+        var END_LINE_H = parseIntegerInput("endLineH", 50);
+        var END_LINE_S = parseIntegerInput("endLineS", 70);
+        var END_LINE_B = parseIntegerInput("endLineB", 100);
+        var END_LINE_A = parseIntegerInput("startLineA", 60);
 
         noiseSeed(NOISE_SEED);
         blendMode(BLEND);
-
 
         for (int i = 0; i < DIVISION / 2; i++) {
             pushMatrix();
@@ -51,16 +96,19 @@ public class LogicalCover2 extends PApplet {
                 inputParameters.noiseXRatio = NOISE_X_RATIO;
                 inputParameters.noiseYRatio = NOISE_Y_RATIO;
                 inputParameters.pointsMax = POINTS_MAX;
-                inputParameters.backgroundColor = new HSB(217, 72, 76);
-                inputParameters.startFillColor = new HSB(0, 0, 0);
-                inputParameters.startLineColor = new HSB(0, 0, 0);
-                inputParameters.endFillColor = new HSB(50, 70, 100, 3);
-                inputParameters.endLineColor = new HSB(50, 70, 100, 60);
+                inputParameters.strokeWeight = STROKE_WEIGHT;
+                inputParameters.backgroundColor = new HSB(BACKGROUND_H, BACKGROUND_S, BACKGROUND_B);
+                inputParameters.startFillColor = new HSB(START_FILL_H, START_FILL_S, START_FILL_B, START_FILL_A);
+                inputParameters.startLineColor = new HSB(START_LINE_H, START_LINE_S, START_LINE_B, START_LINE_A);
+                inputParameters.endFillColor = new HSB(END_FILL_H, END_FILL_S, END_FILL_B, END_FILL_A);
+                inputParameters.endLineColor = new HSB(END_LINE_H, END_LINE_S, END_LINE_B, END_LINE_A);
                 drawInstance(inputParameters);
                 popMatrix();
             }
             popMatrix();
         }
+
+        draw = false;
     }
 
     private void drawInstance(InputParameters input) {
@@ -70,6 +118,7 @@ public class LogicalCover2 extends PApplet {
         fill(input.backgroundColor.h, input.backgroundColor.s, input.backgroundColor.b);
         square(0, 0, input.frameSize);
 
+        strokeWeight(input.strokeWeight);
         for (int rotationCount = 0; rotationCount < input.rotationsMax; rotationCount++) {
             stroke(map(rotationCount, 0, input.rotationsMax, input.startLineColor.h, input.endLineColor.h),
                     map(rotationCount, 0, input.rotationsMax, input.startLineColor.s, input.endLineColor.s),
@@ -102,8 +151,51 @@ public class LogicalCover2 extends PApplet {
     }
 
     @Override
-    public void mouseClicked() {
-        save("/Users/florentbariod/temp/output.tif");
+    public void keyReleased(KeyEvent event) {
+        switch (event.getKey()) {
+            case 'z':
+                draw = true;
+                break;
+            case 'x':
+                draw = true;
+                if (controls.isVisible()) {
+                    controls.hide();
+                } else {
+                    controls.show();
+                }
+                break;
+            case 'a':
+                controls.hide();
+                save("/Users/florentbariod/temp/output.tif");
+                controls.show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private int parseIntegerInput(String inputName, int defaultValue) {
+        try {
+            return Integer.valueOf(controls.get(Textfield.class, inputName).getText());
+        } catch (Exception e){
+            return defaultValue;
+        }
+    }
+
+    private long parseLongInput(String inputName, long defaultValue) {
+        try {
+            return Long.valueOf(controls.get(Textfield.class, inputName).getText());
+        } catch (Exception e){
+            return defaultValue;
+        }
+    }
+
+    private float parseFloatInput(String inputName, float defaultValue) {
+        try {
+            return Float.valueOf(controls.get(Textfield.class, inputName).getText());
+        } catch (Exception e){
+            return defaultValue;
+        }
     }
 
     class InputParameters {
@@ -118,6 +210,7 @@ public class LogicalCover2 extends PApplet {
         HSB startFillColor;
         HSB endLineColor;
         HSB endFillColor;
+        int strokeWeight;
     }
 
     class HSB {
