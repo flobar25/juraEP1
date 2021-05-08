@@ -11,7 +11,7 @@ public class LogicalCover2 extends PApplet {
 
     @Override
     public void settings() {
-        size(1080, 1080);
+        size(3240, 3240);
         smooth();
 
     }
